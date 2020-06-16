@@ -24,6 +24,7 @@
 #  SENTRY_EMAIL_USER
 #  SENTRY_EMAIL_PASSWORD
 #  SENTRY_EMAIL_USE_TLS
+#  SENTRY_EMAIL_LIST_NAMESPACE
 #  SENTRY_ENABLE_EMAIL_REPLIES
 #  SENTRY_SMTP_HOSTNAME
 #  SENTRY_MAILGUN_API_KEY
@@ -82,9 +83,6 @@ if postgres:
                 env('SENTRY_POSTGRES_PORT')
                 or ''
             ),
-            'OPTIONS': {
-                'autocommit': True,
-            },
         },
     }
 
@@ -261,9 +259,14 @@ if env('SENTRY_USE_SSL', False):
 SENTRY_WEB_HOST = '0.0.0.0'
 SENTRY_WEB_PORT = 9000
 SENTRY_WEB_OPTIONS = {
+    'http': '%s:%s' % (SENTRY_WEB_HOST, SENTRY_WEB_PORT),
+    'protocol': 'uwsgi',
+    # This is need to prevent https://git.io/fj7Lw
+    'uwsgi-socket': None,
+    'http-keepalive': True,
+    'memory-report': False,
     # 'workers': 3,  # the number of web workers
 }
-
 
 
 ##########
@@ -281,7 +284,8 @@ ENV_CONFIG_MAPPING = {
     'SENTRY_EMAIL_USE_TLS': ('mail.use-tls', Bool),
     'SENTRY_EMAIL_HOST': 'mail.host',
     'SENTRY_SERVER_EMAIL': 'mail.from',
-    'SENTRY_ENABLE_EMAIL_REPLIES': 'mail.enable-replies',
+    'SENTRY_ENABLE_EMAIL_REPLIES': ('mail.enable-replies', Bool),
+    'SENTRY_EMAIL_LIST_NAMESPACE': 'mail.list-namespace',
     'SENTRY_SMTP_HOSTNAME': 'mail.reply-hostname',
     'SENTRY_SECRET_KEY': 'system.secret-key',
 
